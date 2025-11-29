@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Style Finder Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .quiz-card {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e7ff; /* Light blue border */
+        }
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            transition: width 0.4s ease-in-out;
+            background-color: #4f46e5; /* Indigo-600 */
+        }
+        .answer-button {
+            transition: all 0.2s;
+        }
+        .answer-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+            border-color: #6366f1; /* Indigo-500 */
+        }
+        .selected-button {
+            background-color: #eef2ff; /* Indigo-50 */
+            border-color: #4f46e5 !important;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="quiz-container" class="max-w-3xl mx-auto py-12">
+        <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">
+            Find Your Content Writing Superpower
+        </h1>
+        <p class="text-center text-gray-500 mb-10">
+            Answer 7 quick questions to discover your natural writing style and best content fit.
+        </p>
+
+        <!-- Quiz Card -->
+        <div id="quiz-card" class="quiz-card bg-white p-6 md:p-10 rounded-2xl">
+            
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <p id="question-counter" class="text-sm font-medium text-indigo-600 mb-2"></p>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill h-full" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Question Area -->
+            <div id="question-area">
+                <!-- Content will be injected here -->
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between mt-10">
+                <button id="back-button" onclick="goToPreviousQuestion()" class="px-6 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg shadow hover:bg-gray-300 transition-colors" disabled>
+                    &larr; Back
+                </button>
+                <button id="next-button" onclick="goToNextQuestion()" class="px-8 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:bg-indigo-700 transition-all transform hover:scale-[1.01]" disabled>
+                    Next &rarr;
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Area (Hidden initially) -->
+        <div id="results-area" class="hidden bg-white p-8 md:p-12 rounded-2xl quiz-card mt-8">
+            <h2 class="text-3xl font-bold text-center text-indigo-700 mb-6">
+                🎉 Your Content Writing Strength Style 🎉
+            </h2>
+            <div id="results-content">
+                <!-- Results will be injected here -->
+            </div>
+            <button onclick="restartQuiz()" class="mt-8 w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:bg-indigo-700 transition-colors">
+                Analyze Another Writer
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- QUIZ DATA ---
+        const questions = [
+            {
+                id: 1,
+                text: "When starting a new project, what is your primary focus for the introduction?",
+                options: [
+                    { text: "Hooking them with a compelling, real-life story or anecdote.", value: "B" },
+                    { text: "Establishing credibility immediately with a strong statistic or quote from an authority.", value: "A" },
+                    { text: "Clearly stating the problem, solution, and the exact benefit the reader will get.", value: "C" },
+                    { text: "Setting up a clear, numbered list of topics the post will cover (the roadmap).", value: "D" }
+                ]
+            },
+            {
+                id: 2,
+                text: "What tone do you naturally default to when writing professional content?",
+                options: [
+                    { text: "Serious, formal, and unbiased—like an academic report or white paper.", value: "A" },
+                    { text: "Friendly, empathetic, and relatable—like talking to a friend over coffee.", value: "B" },
+                    { text: "Witty, slightly sarcastic, and entertaining—using metaphors and humor.", value: "D" },
+                    { text: "Urgent, direct, and persuasive—focusing on action and results.", value: "C" }
+                ]
+            },
+            {
+                id: 3,
+                text: "What kind of content format do you enjoy creating the most?",
+                options: [
+                    { text: "Detailed 'How-To' guides, step-by-step tutorials, or instructional videos.", value: "D" },
+                    { text: "Short, punchy ad copy, social media captions, or email subject lines.", value: "C" },
+                    { text: "Long-form expert articles, white papers, or detailed case studies.", value: "A" },
+                    { text: "Personal essays, client testimonials, or 'Day in the Life' narratives.", value: "B" }
+                ]
+            },
+            {
+                id: 4,
+                text: "When you find weak content, what is your first instinct to fix it?",
+                options: [
+                    { text: "Break up dense text with more headings, bullet points, and visual aids (charts, images).", value: "D" },
+                    { text: "Inject more emotion, conflict, and character development to make the story stick.", value: "B" },
+                    { text: "Find and insert up-to-date facts, links to studies, and expert quotes to verify the claims.", value: "A" },
+                    { text: "Make the headline bolder and sharpen the conclusion to include a single, strong call-to-action.", value: "C" }
+                ]
+            },
+            {
+                id: 5,
+                text: "What is your ultimate goal when a reader finishes your piece?",
+                options: [
+                    { text: "They feel validated and connected, like they just heard a story they can relate to.", value: "B" },
+                    { text: "They immediately know what to do next and feel motivated to take action.", value: "C" },
+                    { text: "They feel smarter, having mastered a complex concept that now seems simple.", value: "D" },
+                    { text: "They trust the writer and client completely because the information was so thorough and evidence-based.", value: "A" }
+                ]
+            },
+            {
+                id: 6,
+                text: "How do you prefer to handle the Call to Action (CTA) at the end of your content?",
+                options: [
+                    { text: "Subtly, providing further reading or a link to a detailed resource (soft sell).", value: "A" },
+                    { text: "Boldly, using urgent language and large buttons to drive immediate conversion (hard sell).", value: "C" },
+                    { text: "Gently, by weaving the CTA into a personal reflection or anecdote (relatable sell).", value: "B" },
+                    { text: "Clearly, by listing a few simplified next steps or a checklist.", value: "D" }
+                ]
+            },
+            {
+                id: 7,
+                text: "Which type of research do you enjoy the most?",
+                options: [
+                    { text: "Reading technical white papers and analyzing data from industry reports.", value: "A" },
+                    { text: "Interviewing people and collecting interesting personal experiences.", value: "B" },
+                    { text: "Scanning competitor ads and optimizing language for maximum click-through rates (CTR).", value: "C" },
+                    { text: "Breaking down confusing jargon and finding simple analogies to explain concepts.", value: "D" }
+                ]
+            }
+        ];
+
+        // --- STYLES & RESULTS DATA ---
+        const resultsData = {
+            'A': {
+                style: "The Analyst-Authority",
+                description: "You thrive on data, research, and credibility. You build strong arguments using evidence and position yourself as the definitive expert in complex topics. Your content is highly trusted and respected.",
+                niches: "B2B Technology, Finance & Investment, Healthcare/Scientific Research, Legal, Detailed Product Reviews (SaaS, enterprise tools).",
+                formats: "White Papers, Definitive Guides, Detailed Case Studies, Expert Interviews, E-books, Research Reports.",
+                goal: "To establish absolute trust and authority, converting readers based on logic and irrefutable evidence."
+            },
+            'B': {
+                style: "The Narrative Storyteller",
+                description: "You connect with readers through emotion and personal experience. You naturally weave powerful narratives and anecdotes, making even dry topics feel relatable and human. People read your content because of your voice.",
+                niches: "Lifestyle, Personal Development, Memoir/Creative Non-Fiction, Travel, Brand Storytelling, Testimonial-focused Marketing.",
+                formats: "Personal Essays, Brand Story Pillars, Testimonials, Narrative Blog Posts, Feature Articles (Human Interest).",
+                goal: "To foster a deep, emotional connection with the audience, making them feel seen and understood."
+            },
+            'C': {
+                style: "The Direct Copywriter",
+                description: "You are the master of persuasion and brevity. Your goal is always action. You use strong, urgent language to overcome objections quickly, and you excel at short-form content with high conversion rates.",
+                niches: "E-commerce, Direct Response Marketing, Email Campaigns, Social Media Ads (Meta/Google), Landing Pages, Sales Funnels.",
+                formats: "Ad Copy (PPC/Social), Email Subject Lines & Bodies, Sales Pages, Website Hero Copy, SMS Marketing.",
+                goal: "To drive immediate conversion (clicks, purchases, sign-ups) using persuasive language and clear calls-to-action."
+            },
+            'D': {
+                style: "The Structured Educator",
+                description: "Your superpower is clarity and simplification. You are brilliant at taking complex, jargon-heavy topics and breaking them down into digestible, step-by-step formats. You make difficult things easy to learn.",
+                niches: "Tutorials & Guides, Education/E-Learning Platforms, DIY, Complex Software Documentation, Explainer Content.",
+                formats: "'How-To' Guides, Step-by-Step Tutorials, Checklists, Infographics (written content for them), Comprehensive FAQs.",
+                goal: "To simplify complexity and empower the reader to take on a challenge, moving them from confused to capable."
+            }
+        };
+
+        // --- QUIZ LOGIC ---
+        let currentQuestionIndex = 0;
+        let answers = new Array(questions.length).fill(null); // Stores the selected value (A, B, C, D)
+
+        const questionArea = document.getElementById('question-area');
+        const questionCounter = document.getElementById('question-counter');
+        const progressFill = document.getElementById('progress-fill');
+        const backButton = document.getElementById('back-button');
+        const nextButton = document.getElementById('next-button');
+        const quizCard = document.getElementById('quiz-card');
+        const resultsArea = document.getElementById('results-area');
+
+        function renderQuestion() {
+            const q = questions[currentQuestionIndex];
+            const totalQuestions = questions.length;
+
+            // Update Counter and Progress
+            questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${totalQuestions}`;
+            const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+            progressFill.style.width = `${progress}%`;
+
+            // Render Question HTML
+            questionArea.innerHTML = `
+                <h3 class="text-xl md:text-2xl font-semibold text-gray-800 mb-8">${q.text}</h3>
+                <div class="space-y-4">
+                    ${q.options.map((option, index) => `
+                        <button 
+                            class="answer-button w-full text-left p-4 rounded-xl border-2 border-gray-200 text-gray-700 bg-white hover:border-indigo-400 focus:outline-none"
+                            data-value="${option.value}"
+                            onclick="selectAnswer(this, '${option.value}')"
+                        >
+                            <span class="font-bold text-indigo-600 mr-2">${String.fromCharCode(65 + index)}.</span> ${option.text}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+
+            // Restore selection if exists
+            const selectedValue = answers[currentQuestionIndex];
+            if (selectedValue) {
+                const selectedButton = questionArea.querySelector(`.answer-button[data-value="${selectedValue}"]`);
+                if (selectedButton) {
+                    selectedButton.classList.add('selected-button');
+                    nextButton.disabled = false;
+                }
+            } else {
+                nextButton.disabled = true;
+            }
+
+            // Update navigation buttons state
+            backButton.disabled = currentQuestionIndex === 0;
+            
+            if (currentQuestionIndex === questions.length - 1) {
+                nextButton.textContent = 'See Results';
+            } else {
+                nextButton.textContent = 'Next →';
+            }
+        }
+
+        function selectAnswer(button, value) {
+            // Remove selection from all buttons
+            questionArea.querySelectorAll('.answer-button').forEach(btn => {
+                btn.classList.remove('selected-button');
+            });
+            // Add selection to the clicked button
+            button.classList.add('selected-button');
+            
+            answers[currentQuestionIndex] = value;
+            nextButton.disabled = false;
+        }
+
+        function goToNextQuestion() {
+            if (answers[currentQuestionIndex] === null) {
+                alert("Please select an option before moving to the next question.");
+                return;
+            }
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function goToPreviousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        function calculateResults() {
+            const scores = { 'A': 0, 'B': 0, 'C': 0, 'D': 0 };
+
+            answers.forEach(answer => {
+                if (answer) {
+                    scores[answer]++;
+                }
+            });
+
+            // Find the style with the highest score
+            let maxScore = -1;
+            let resultKey = 'A'; 
+            
+            for (const key in scores) {
+                if (scores[key] > maxScore) {
+                    maxScore = scores[key];
+                    resultKey = key;
+                }
+            }
+            return resultsData[resultKey];
+        }
+
+        function showResults() {
+            const finalResult = calculateResults();
+            const content = `
+                <h3 class="text-2xl font-extrabold text-gray-800 mb-6">${finalResult.style}</h3>
+                <p class="text-lg text-gray-600 mb-8">${finalResult.description}</p>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-xl font-bold text-indigo-600 border-b pb-2 mb-3">Ideal Niches/Industries</h4>
+                        <p class="text-gray-700">${finalResult.niches}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold text-indigo-600 border-b pb-2 mb-3">Best Content Formats</h4>
+                        <p class="text-gray-700">${finalResult.formats}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold text-indigo-600 border-b pb-2 mb-3">Your Content Goal</h4>
+                        <p class="text-gray-700">${finalResult.goal}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('results-content').innerHTML = content;
+            quizCard.classList.add('hidden');
+            resultsArea.classList.remove('hidden');
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            answers = new Array(questions.length).fill(null);
+            resultsArea.classList.add('hidden');
+            quizCard.classList.remove('hidden');
+            renderQuestion();
+        }
+
+        // Initialize the quiz
+        window.onload = renderQuestion;
+
+    </script>
+</body>
+</html>
